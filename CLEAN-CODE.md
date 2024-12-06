@@ -1,7 +1,11 @@
 ## Introduction 
 ...
 
-## 1. Naming Best Practices
+## 1. Naming 
+- Good naming requires descriptive skills and cultural understanding.
+- Regularly refactor code to improve naming and readability.
+- Clear, intentional names make code easier to understand and maintain over the long term.
+  
 ### 1.1.  Use Intention-Revealing Names
 - Names should convey purpose, usage, and meaning. Avoid ambiguous or generic names.
 - Replace cryptic names with descriptive ones that do not require additional comments.
@@ -119,7 +123,169 @@ def holy_hand_grenade():
     pass
 ```
 
+## 2. Functions
+- Functions are the building blocks of clean code and should be small, focused, and descriptive.
+- Strive for simplicity, eliminate duplication, and write code that reads like a well-structured narrative. Functions are not just code—they are the verbs of your domain-specific language.
+  
+### 2.1 Keep Functions Small
+- Functions should be as short as possible. Ideally, they should fit within a few lines.
+- Each function should perform one task only, focusing on clarity and brevity.
+```python
+# Good
+def render_page(page_data):
+    if is_test_page(page_data):
+        include_setup_and_teardown_pages(page_data)
+    return page_data.get_html()
 
+# Bad
+def render_page(page_data):
+    if page_data.has_attribute("Test"):
+        # Long, complex operations for setup and teardown
+        setup_pages = fetch_setup_pages()
+        teardown_pages = fetch_teardown_pages()
+        page_data.set_content(setup_pages + page_data.get_content() + teardown_pages)
+    return page_data.get_html()
+```
+
+### 2.2. Do One Thing
+- Functions should do one thing and do it well. Avoid combining unrelated operations.
+- If a function can be described with a single verb or action, it’s likely doing one thing.
+```python
+# Good
+def include_setup_and_teardown_pages(page_data):
+    include_setup_pages(page_data)
+    include_teardown_pages(page_data)
+
+# Bad
+def include_pages(page_data):
+    include_setup_pages(page_data)
+    include_teardown_pages(page_data)
+    render_html(page_data)
+```
+
+### 2.3. Use One Level of Abstraction
+- Functions should stay at a single level of abstraction.
+- Avoid mixing high-level logic with low-level details in the same function.
+```python
+# Good
+def include_setup_pages(page_data):
+    suite_setup = find_suite_setup(page_data)
+    if suite_setup:
+        append_setup(page_data, suite_setup)
+
+# Bad
+def include_setup_pages(page_data):
+    suite_setup = PageCrawler.get_inherited_page("SuiteSetup", page_data.wiki_page)
+    if suite_setup:
+        setup_path = suite_setup.get_page_crawler().get_full_path(suite_setup)
+        page_data.buffer.append(f"!include {PathParser.render(setup_path)}")
+```
+
+### 2.4. Use Descriptive Names
+- Function names should clearly describe their purpose. Long, descriptive names are preferable to short, cryptic ones.
+- Avoid ambiguous terms and ensure consistency across similar functions.
+```python
+# Good
+def include_setup_pages():
+    pass
+
+# Bad
+def process_setups():
+    pass
+```
+
+### 2.5. Minimize Function Arguments
+- Ideal number of arguments: 0 (niladic), 1 (monadic), or 2 (dyadic). Avoid triadic or polyadic arguments when possible.
+- Use argument objects if more than two arguments are required.
+```python
+# Good
+def create_circle(center, radius):
+    pass
+
+# Bad
+def create_circle(x, y, radius):
+    pass
+```
+
+### 2.6. Avoid Flag Arguments
+- Flag arguments (e.g., `is_suite`) indicate a function is doing more than one thing. Split such functions into separate ones.
+```python
+# Good
+def render_for_suite(page_data):
+    pass
+
+def render_for_test(page_data):
+    pass
+
+# Bad
+def render_page(page_data, is_suite):
+    pass
+```
+
+### 2.7. Separate Command and Query Functions
+- Functions should either perform an action (command) or return information (query), but not both.
+```python
+# Good
+if attribute_exists("username"):
+    set_attribute("username", "john_doe")
+
+# Bad
+if set_attribute("username", "john_doe"):
+    pass
+```
+
+### 2.8. Use Exceptions Instead of Error Codes
+- Avoid returning error codes. Use exceptions to separate normal flow from error handling.
+```python
+# Good
+try:
+    delete_page(page)
+except Exception as e:
+    log_error(e)
+
+# Bad
+if delete_page(page) == "ERROR":
+    log_error("Failed to delete page")
+```
+
+### 2.9. Avoid Duplication
+- Eliminate repeated code by abstracting common logic into reusable functions.
+```python
+# Good
+def include(page, type):
+    page_path = fetch_page_path(type)
+    if page_path:
+        buffer.append(f"!include -{type} {page_path}")
+
+# Bad
+def include_setup_page():
+    setup_path = fetch_setup_path()
+    if setup_path:
+        buffer.append(f"!include -setup {setup_path}")
+
+def include_teardown_page():
+    teardown_path = fetch_teardown_path()
+    if teardown_path:
+        buffer.append(f"!include -teardown {teardown_path}")
+```
+
+### 2.10. Error Handling is One Thing
+- Functions that handle errors should do only that. Extract error-handling logic into separate functions.
+```python
+# Good
+def delete_page_with_error_handling(page):
+    try:
+        delete_page(page)
+    except Exception as e:
+        log_error(e)
+
+# Bad
+def delete_page(page):
+    try:
+        # Delete logic
+    except Exception as e:
+        log_error(e)
+```
 
 
 
