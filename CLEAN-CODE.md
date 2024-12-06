@@ -287,6 +287,150 @@ def delete_page(page):
         log_error(e)
 ```
 
+## 3. Comments
+- Comments are a necessary evil, not a hallmark of good code. They often:
+  - Become outdated and misleading.
+  - Signal failures to express intent through code.
+  - Always strive to rewrite code for clarity instead of relying on comments.
+
+### 3.1. When Comments are Necessary
+#### 3.1.1. Informative Comments
+- Provide essential information that cannot be expressed directly in code.
+```python
+# Matches "Tue, 02 Apr 2003 22:18:49 GMT"
+http_date_pattern = re.compile(
+    r"[SMTWF][a-z]{2},\s[0-9]{2}\s[JFMASOND][a-z]{2}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT"
+)
+```
+
+#### 3.1.2. Explanation of Intent
+- Use comments to clarify why decisions were made.
+```python
+# Use a thread-local date formatter to avoid concurrency issues
+from threading import local
+
+thread_local_date_format = local()
+def get_date_format():
+    if not hasattr(thread_local_date_format, "formatter"):
+        thread_local_date_format.formatter = "%Y-%m-%d"
+    return thread_local_date_format.formatter
+```
+
+#### 3.1.3. Warnings About Consequences
+- Warn developers of potential pitfalls or consequences.
+```python
+# SimpleDateFormat is not thread-safe; create a new instance for each thread
+date_format = "%Y-%m-%d"
+```
+
+#### 3.1.4. TODO Comments
+- Mark areas for future work clearly.
+```python
+# TODO: Optimize this function for large datasets
+def calculate_primes(limit):
+    pass
+```
+
+#### 3.1.5. Amplification
+- Emphasize critical details that might otherwise seem minor.
+```python
+# The trim is crucial to avoid issues with leading/trailing spaces
+list_item = text.strip()
+```
+
+#### 3.1.6. Public API Documentation
+- Use docstrings for public-facing APIs.
+```python
+def get_user_by_id(user_id: str):
+    """
+    Retrieves a user by their ID.
+
+    Args:
+        user_id (str): The unique identifier for the user.
+
+    Returns:
+        dict: A dictionary containing user information, or None if not found.
+    """
+    pass
+```
+
+### 3.2. What to Avoid
+#### 3.2.1. Redundant Comments
+- Avoid comments that restate what the code already expresses.
+```python
+# Adds two numbers
+result = a + b  # Redundant and unnecessary
+```
+
+#### 3.2.2. Misleading Comments
+- Ensure comments accurately describe the code.
+```python
+# Returns True if the list is empty
+return len(my_list) > 0  # Misleading; this checks if the list is non-empty
+```
+
+#### 3.2.3. Mandated Comments
+- Avoid comments added solely for compliance purposes.
+```python
+# The name of the user
+user_name = "John"  # Pointless redundancy
+```
+
+#### 3.2.4. Journal Comments
+- Use version control instead of journal entries.
+```python
+# Added by Eric on 2024-01-15
+```
+
+#### 3.2.5. Commented-Out Code
+- Remove commented-out code; rely on version control.
+```python
+# Old implementation
+# result = calculate_old_way(x, y)
+# return result
+```
+
+#### 3.2.6. Noisy Comments
+- Avoid comments that add no value.
+```python
+# Returns the day of the month
+def get_day_of_month():
+    return day_of_month 
+```
+
+### 3.3. Rewrite Instead of Commenting
+- Use **descriptive function names** and **variables** to make comments unnecessary.
+```python
+# Good
+if user.is_eligible_for_benefits():
+    grant_benefits(user)
+
+# Bad
+# Check if the user is eligible for benefits
+if user.age > 65 and user.is_retired:
+    grant_benefits(user)
+```
+
+> ### Principles for Clean Comments
+> 1. **Keep Comments Local**: A comment should describe only the code near it.
+> 3. **Write Meaningful Comments**: Ensure comments are informative, accurate, and add value.
+> 4. **Strive for Self-Documenting Code**: Refactor code to minimize the need for comments.
+> 5. **Avoid Using Comments as a Crutch**: Poorly written code with lots of comments is not better than clean, comment-free code.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
