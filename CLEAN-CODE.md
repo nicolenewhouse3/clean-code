@@ -18,18 +18,7 @@ days_since_creation = 10
 d = 7  # elapsed time
 ```
 
-### 1.2. Avoid Disinformation
-- Avoid misleading names or words with established meanings that don’t align with your intent.
-- Ensure names clearly differentiate between similar concepts.
-```python
-# Good
-account_group = [account1, account2]
-
-# Bad
-account_list = {key: value}  # Misleading, not a list
-```
-
-### 1.3. Make Meaningful Distinctions
+### 1.2. Make Meaningful Distinctions
 - Avoid arbitrary changes, like adding numbers or noise words.
 - Use names that highlight the purpose and differences between entities.
 ```python
@@ -42,6 +31,17 @@ def copy_chars(source, destination):
 def copy_chars(a1, a2):
     for i in range(len(a1)):
         a2[i] = a1[i]
+```
+
+### 1.3. Avoid Disinformation
+- Avoid misleading names or words with established meanings that don’t align with your intent.
+- Ensure names clearly differentiate between similar concepts.
+```python
+# Good
+account_group = [account1, account2]
+
+# Bad
+account_list = {key: value}  # Misleading, not a list
 ```
 
 ### 1.4. Use Pronounceable Names
@@ -418,18 +418,265 @@ if user.age > 65 and user.is_retired:
 > 5. **Avoid Using Comments as a Crutch**: Poorly written code with lots of comments is not better than clean, comment-free code.
 
 
+## 4. Formatting
+### 4.1. Vertical Openness Between Concepts
+- Use **blank lines** to separate distinct concepts and make the code more readable.
+```python
+# Good
+def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+
+# Bad
+def add(a,b):
+    return a+b
+def subtract(a,b):
+    return a-b
+```
+
+### 4.2. Vertical Density
+- Keep **related lines of code tightly grouped** without unnecessary blank lines.
+```python
+# Good
+class ReporterConfig:
+    def __init__(self):
+        self.reporter_name = ""
+        self.properties = []
+
+    def add_property(self, property):
+        self.properties.append(property)
+
+# Bad
+class ReporterConfig:
+
+    def __init__(self):
+
+        self.reporter_name = ""
 
 
+        self.properties = []
 
 
+    def add_property(self, property):
+
+        self.properties.append(property)
+```
+
+### 4.3. Newspaper Metaphor
+- Keep **high-level functions and concepts at the top**, and **low-level details at the bottom**.
+```python
+# Good
+def main():
+    result = calculate_total(10, 20)
+    print(f"Result: {result}")
+
+def calculate_total(a, b):
+    return a + b
+
+# Bad
+def calculate_total(a, b):
+    return a + b
+
+def main():
+    result = calculate_total(10, 20)
+    print(f"Result: {result}")
+```
+
+### 4.4. Vertical Ordering
+- **Caller functions should appear above callee functions**, allowing a natural top-down flow.
+```python
+# Good
+def main():
+    result = multiply(2, 3)
+    print(f"Result: {result}")
+
+def multiply(a, b):
+    return a * b
+
+# Bad
+def multiply(a, b):
+    return a * b
+
+def main():
+    result = multiply(2, 3)
+    print(f"Result: {result}")
+```
+
+### 4.5. Limit Line Length
+- Avoid **long lines** of code that are hard to read.
+```python
+# Good
+result = (-b + math.sqrt((b ** 2) - (4 * a * c))) / (2 * a)
+
+# Bad
+result = (-b + math.sqrt((b ** 2) - (4 * a * c))) / (2 * a) + (-b - math.sqrt((b ** 2) - (4 * a * c))) / (2 * a)
+```
+
+### 4.6. Horizontal Openness
+- Use **spaces around operators** for clarity.
+```python
+# Good
+result = (a + b) * (c - d)
+
+# Bad
+result=(a+b)*(c-d)
+```
+
+### 4.7. Avoid Horizontal Alignment
+- Avoid **manually aligning variables or assignments**, as it adds clutter and isn't flexible.
+```python
+# Good
+x = 10
+y = 20
+zz = 30
+
+# Bad
+x   = 10
+y   = 20
+zz  = 30
+```
+
+### 4.8. Indentation
+- Maintain **consistent indentation** of 4 spaces, and don't collapse scopes unnecessarily.
+```python
+# Good
+if condition:
+    do_something()
+
+# Bad
+if condition: do_something()
+```
+
+### 4.9. Dummy Scopes
+- Add **clear intent** for empty loops or dummy scopes.
+```python
+# Good
+while some_condition:
+    pass  # Waiting for the condition to change
+
+# Bad
+while some_condition:
+    ;
+```
+
+> ### Principles for Readable and Consistent Formatting
+>  1. Code should be easy to read, consistent, and orderly.
+>  2. The team must agree on a uniform style to ensure consistency across the project.
+>  3. Tools like Black, isort, and flake8 can help automate formatting and enforce rules.
 
 
+## 5. Objects and Data Structures in Python
+- This section highlights the balance between objects and data structures, focusing on their proper use in a Python codebase.
+- Objects encapsulate data and expose behavior, while data structures expose data without embedding business logic.
+### 5.1 Data Abstraction
+- Objects should expose behavior while hiding implementation details.
+- Avoid exposing raw variables; instead, use abstract interfaces.
+```python
+# Good
+class Point:
+    def set_cartesian(self, x, y):
+        self._x = x
+        self._y = y
 
+    def get_coordinates(self):
+        return self._x, self._y
 
+# Bad
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+```
 
+### 5.2. Abstract vs. Concrete Interfaces
+- Abstract interfaces describe "what" the data represents, not "how" it is stored.
+- Avoid forcing consumers to understand implementation details.
+```python
+# Good
+class Vehicle:
+    def get_fuel_percentage(self):
+        return (self._fuel_remaining / self._fuel_capacity) * 100
 
+# Bad
+class Vehicle:
+    def __init__(self, fuel_capacity, fuel_remaining):
+        self.fuel_capacity = fuel_capacity
+        self.fuel_remaining = fuel_remaining
+```
 
+### 5.3. Data/Object Anti-Symmetry
+- Procedural code simplifies adding new functions; OO simplifies adding new types.
+- Use the approach that fits your system's needs.
+```python
+# Good
+class Shape:
+    def area(self):
+        raise NotImplementedError
 
+class Circle(Shape):
+    def area(self):
+        return math.pi * self.radius ** 2
+
+# Bad
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+def area(shape):
+    if isinstance(shape, Circle):
+        return math.pi * shape.radius ** 2
+```
+
+### 5.4. The Law of Demeter
+- Minimize dependencies by interacting only with immediate collaborators.
+- Avoid "train wrecks" (long chains of method calls).
+```python
+# Good
+output_dir = ctxt.get_absolute_scratch_path()
+
+# Bad
+output_dir = ctxt.get_options().get_scratch_dir().get_absolute_path()
+```
+
+### 5.5. Hybrids
+- Avoid hybrids that mix object behaviors and data structure accessors.
+- Separate data structures from business logic.
+```python
+# Good
+class UserDTO:
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+
+# Bad
+class User:
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+
+    def send_welcome_email(self):
+        print(f"Sending welcome email to {self.email}")
+```
+
+> ### Principles of Objects and Data Structures
+> - **Objects**:
+>   - Encapsulate behavior and hide data.
+>   - Easy to add new types without changing existing behaviors.
+>   - Difficult to add new behaviors to existing types.
+> - **Data Structures**:
+>   - Expose data and have minimal behavior.
+>   - Easy to add new behaviors without altering existing data structures.
+>   - Difficult to add new types without modifying existing functions.
+> - **Choosing the Right Approach**:
+>   - Prefer objects when you need flexibility in adding new types.
+>   - Prefer data structures when you need flexibility in adding new behaviors.
+
+## 6. Error Handling
+- Clean code is both readable and robust. Error handling should be treated as a separate concern, allowing the main logic to remain clear and focused.
+- By organizing error handling independently, developers can reason about it more effectively, leading to greater maintainability and fewer bugs.
+### 6.1. Use Exceptions Rather Than Return Codes
 
 
 
