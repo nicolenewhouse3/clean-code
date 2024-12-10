@@ -2,13 +2,11 @@
 ...
 
 ## 1. Naming 
-- Good naming requires descriptive skills and cultural understanding.
-- Regularly refactor code to improve naming and readability.
-- Clear, intentional names make code easier to understand and maintain over the long term.
-  
+- Good naming improves readability and maintainability by clearly conveying intent, purpose, and context.
+- Regularly refactor names to enhance clarity and eliminate ambiguity.
+
 ### 1.1.  Use Intention-Revealing Names
-- Names should convey purpose, usage, and meaning. Avoid ambiguous or generic names.
-- Replace cryptic names with descriptive ones that do not require additional comments.
+- Names should describe the purpose, usage, and meaning without needing additional comments.
 ```python
 # Good
 elapsed_time_in_days = 7
@@ -19,8 +17,8 @@ d = 7  # elapsed time
 ```
 
 ### 1.2. Make Meaningful Distinctions
-- Avoid arbitrary changes, like adding numbers or noise words.
-- Use names that highlight the purpose and differences between entities.
+- Names should highlight the purpose and differences between entities.
+- Avoid generic or arbitrary changes, like adding numbers or noise words.
 ```python
 # Good  
 def copy_chars(source, destination):
@@ -33,9 +31,8 @@ def copy_chars(a1, a2):
         a2[i] = a1[i]
 ```
 
-### 1.3. Avoid Disinformation
-- Avoid misleading names or words with established meanings that don’t align with your intent.
-- Ensure names clearly differentiate between similar concepts.
+### 1.3. Avoid Misleading or Ambiguous Names
+- Avoid names that mislead or suggest a meaning different from their intent.
 ```python
 # Good
 account_group = [account1, account2]
@@ -44,21 +41,16 @@ account_group = [account1, account2]
 account_list = {key: value}  # Misleading, not a list
 ```
 
-### 1.4. Use Pronounceable Names
-- Choose names that are easy to pronounce.
-- This helps facilitate clear communication during discussions and to reduce onboarding time for new developers.
+### 1.4. Use Pronounceable and Searchable Names
+- Choose names that are easy to pronounce and search for in code.
+- Avoid single-letter variables or constants that lack clarity.
 ```python
 # Good
 pswdExpDt = "2024-12-31"
 
 # Bad
 password_expiration_date = "2024-12-31"
-```
 
-### 1.4. Use Searchable Names
-- Avoid single-letter names or numeric constants that are difficult to locate.
-- Use descriptive, searchable names.
-```python
 # Good
 WORK_DAYS_PER_WEEK = 5
 HOURS_PER_DAY = 4
@@ -72,9 +64,9 @@ for i in range(7):
     total += values[i] * 4 / 5
 ```
 
-### 1.5. Avoid Encodings
+### 1.5. Avoid Encodings and Mental Mapping
 - Do not add unnecessary type or scope encodings (e.g., m_ or Hungarian Notation).
-- Modern tools and languages provide better ways to distinguish variable types and scope.
+- Use descriptive names instead of abstract placeholders.
 ```python
 # Good
 class Part:
@@ -85,11 +77,7 @@ class Part:
 class Part:
     def __init__(self):
         self.m_description = ""
-```
 
-### 1.6. Avoid Mental Mapping
-- Use clear, explicit names instead of abstract placeholders or single letters.
-```python
 # Good
 url_without_host = "example.com/path"
 
@@ -97,8 +85,9 @@ url_without_host = "example.com/path"
 r = "example.com/path"  # What does r mean?
 ```
 
-### 1.7. Add Meaningful Context
-- Provide context through class, function, or variable names. Avoid gratuitous prefixes or unnecessary context.
+### 1.6. Add Context Through Names
+- Provide context through clear class, function, or variable names.
+- Avoid unnecessary prefixes or redundant context.
 ```python
 # Good
 class Address:
@@ -111,92 +100,121 @@ class GSDAddress:
         pass
 ```
 
-### 1.8. Don’t Be Cute or Pun
-- Avoid clever or humorous names that may not be clear to others.
+### 1.7. Avoid Cute or Clever Names
+- Avoid humor or puns in names that may confuse others or lack clarity.
 ```python
 # Good
 def delete_items():
     pass
 
 # Bad
-def holy_hand_grenade():
+def hand_grenade():
     pass
 ```
 
 ## 2. Functions
-- Functions are the building blocks of clean code and should be small, focused, and descriptive.
-- Strive for simplicity, eliminate duplication, and write code that reads like a well-structured narrative. Functions are not just code—they are the verbs of your domain-specific language.
-  
-### 2.1 Keep Functions Small
-- Functions should be as short as possible. Ideally, they should fit within a few lines.
-- Each function should perform one task only, focusing on clarity and brevity.
+- Functions are the building blocks of clean code.
+- They should be small, focused, and descriptive, resembling well-structured narrative verbs in your domain language.
+- Strive for simplicity, avoid duplication, and write functions that clearly express intent.
+
+### 2.1 Keep Functions Small and Focused
+- Functions should be short and perform only one task.
+- Each function should focus on clarity and brevity.
 ```python
 # Good
-def render_page(page_data):
-    if is_test_page(page_data):
-        include_setup_and_teardown_pages(page_data)
-    return page_data.get_html()
+def calculate_total_price(cart):
+    total_price = sum(item.price for item in cart)
+    return apply_discount(total_price)
+
+def apply_discount(price):
+    discount_rate = 0.1  # 10% discount
+    return price * (1 - discount_rate)
 
 # Bad
-def render_page(page_data):
-    if page_data.has_attribute("Test"):
-        # Long, complex operations for setup and teardown
-        setup_pages = fetch_setup_pages()
-        teardown_pages = fetch_teardown_pages()
-        page_data.set_content(setup_pages + page_data.get_content() + teardown_pages)
-    return page_data.get_html()
+def calculate_total_price(cart):
+    total_price = 0
+    for item in cart:
+        total_price += item.price
+    discount_rate = 0.1  # 10% discount
+    total_price = total_price * (1 - discount_rate)
+    return total_price
 ```
 
 ### 2.2. Do One Thing
-- Functions should do one thing and do it well. Avoid combining unrelated operations.
-- If a function can be described with a single verb or action, it’s likely doing one thing.
+- Each function should do one thing and do it well.
+- Avoid combining unrelated operations.
 ```python
 # Good
-def include_setup_and_teardown_pages(page_data):
-    include_setup_pages(page_data)
-    include_teardown_pages(page_data)
+def process_order(order):
+    validate_order(order)
+    calculate_shipping(order)
+    finalize_order(order)
+
+def validate_order(order):
+    if not order.is_valid():
+        raise ValueError("Order is invalid")
+
+def calculate_shipping(order):
+    order.shipping_cost = order.weight * 0.5
+
+def finalize_order(order):
+    order.status = "completed"
+    send_order_confirmation(order)
 
 # Bad
-def include_pages(page_data):
-    include_setup_pages(page_data)
-    include_teardown_pages(page_data)
-    render_html(page_data)
+def process_order(order):
+    if not order.is_valid():
+        raise ValueError("Order is invalid")
+    order.shipping_cost = order.weight * 0.5
+    order.status = "completed"
+    send_order_confirmation(order)
 ```
 
-### 2.3. Use One Level of Abstraction
-- Functions should stay at a single level of abstraction.
-- Avoid mixing high-level logic with low-level details in the same function.
+### 2.3. Use a Single Level of Abstraction
+- Functions should operate at a single level of abstraction.
+- Avoid mixing high-level logic with low-level details.
 ```python
 # Good
-def include_setup_pages(page_data):
-    suite_setup = find_suite_setup(page_data)
-    if suite_setup:
-        append_setup(page_data, suite_setup)
+def process_user_profile(user_data):
+    user_profile = fetch_user_profile(user_data)
+    if user_profile:
+        update_profile_details(user_profile, user_data)
+
+def fetch_user_profile(user_data):
+    return database.get("user_profiles", user_data["id"])
+
+def update_profile_details(profile, data):
+    profile["name"] = data.get("name")
+    profile["email"] = data.get("email")
+    database.save("user_profiles", profile)
 
 # Bad
-def include_setup_pages(page_data):
-    suite_setup = PageCrawler.get_inherited_page("SuiteSetup", page_data.wiki_page)
-    if suite_setup:
-        setup_path = suite_setup.get_page_crawler().get_full_path(suite_setup)
-        page_data.buffer.append(f"!include {PathParser.render(setup_path)}")
+def process_user_profile(user_data):
+    user_profile = database.get("user_profiles", user_data["id"])
+    if user_profile:
+        user_profile["name"] = user_data.get("name")
+        user_profile["email"] = user_data.get("email")
+        database.save("user_profiles", user_profile)
 ```
 
 ### 2.4. Use Descriptive Names
-- Function names should clearly describe their purpose. Long, descriptive names are preferable to short, cryptic ones.
-- Avoid ambiguous terms and ensure consistency across similar functions.
+- Function names should clearly describe their purpose.
+- Long, descriptive names are better than short, cryptic ones.
 ```python
 # Good
-def include_setup_pages():
-    pass
+def calculate_monthly_expenses(expenses):
+    total = sum(expenses)
+    return total
 
 # Bad
-def process_setups():
-    pass
+def process_data(data):
+    total = sum(data)
+    return total
 ```
 
 ### 2.5. Minimize Function Arguments
-- Ideal number of arguments: 0 (niladic), 1 (monadic), or 2 (dyadic). Avoid triadic or polyadic arguments when possible.
-- Use argument objects if more than two arguments are required.
+- Keep function arguments minimal. Prefer niladic (0), monadic (1), or dyadic (2) arguments.
+- Use argument objects for more than two arguments.
 ```python
 # Good
 def create_circle(center, radius):
@@ -211,90 +229,129 @@ def create_circle(x, y, radius):
 - Flag arguments (e.g., `is_suite`) indicate a function is doing more than one thing. Split such functions into separate ones.
 ```python
 # Good
-def render_for_suite(page_data):
-    pass
+def process_admin_request(request_data):
+    log_admin_access(request_data)
+    return handle_admin_logic(request_data)
 
-def render_for_test(page_data):
-    pass
+def process_user_request(request_data):
+    return handle_user_logic(request_data)
 
 # Bad
-def render_page(page_data, is_suite):
-    pass
+def process_request(request_data, is_admin):
+    if is_admin:
+        log_admin_access(request_data)
+        return handle_admin_logic(request_data)
+    else:
+        return handle_user_logic(request_data)
 ```
 
 ### 2.7. Separate Command and Query Functions
 - Functions should either perform an action (command) or return information (query), but not both.
 ```python
 # Good
-if attribute_exists("username"):
-    set_attribute("username", "john_doe")
+def is_username_valid(username):
+    return username in valid_usernames
+
+def add_username(username):
+    valid_usernames.append(username)
+
+if is_username_valid("john_doe"):
+    add_username("john_doe")
 
 # Bad
-if set_attribute("username", "john_doe"):
+def add_username_if_valid(username):
+    if username in valid_usernames:
+        valid_usernames.append(username)
+        return True
+    return False
+
+if add_username_if_valid("john_doe"):
     pass
 ```
 
 ### 2.8. Use Exceptions Instead of Error Codes
-- Avoid returning error codes. Use exceptions to separate normal flow from error handling.
+- Avoid returning error codes.
+- Use exceptions to separate normal flow from error handling.
 ```python
 # Good
+def fetch_data(url):
+    if not url:
+        raise ValueError("URL cannot be empty")
+    # Logic to fetch data from the URL
+    return "data"
+
 try:
-    delete_page(page)
-except Exception as e:
-    log_error(e)
+    data = fetch_data("")
+except ValueError as e:
+    print(f"Error: {e}")
 
 # Bad
-if delete_page(page) == "ERROR":
-    log_error("Failed to delete page")
+def fetch_data(url):
+    if not url:
+        return "ERROR: URL cannot be empty"
+    # Logic to fetch data from the URL
+    return "data"
+
+result = fetch_data("")
+if "ERROR" in result:
+    print(result)
 ```
 
-### 2.9. Avoid Duplication
-- Eliminate repeated code by abstracting common logic into reusable functions.
+### 2.9. Eliminate Duplication
+- Abstract common logic into reusable functions to avoid repeated code.
 ```python
 # Good
-def include(page, type):
-    page_path = fetch_page_path(type)
-    if page_path:
-        buffer.append(f"!include -{type} {page_path}")
+def handle_user_action(action, user_id):
+    user = fetch_user(user_id)
+    if action == "activate":
+        update_status(user, "active")
+    elif action == "deactivate":
+        update_status(user, "inactive")
 
 # Bad
-def include_setup_page():
-    setup_path = fetch_setup_path()
-    if setup_path:
-        buffer.append(f"!include -setup {setup_path}")
+def activate_user(user_id):
+    user = fetch_user(user_id)
+    update_status(user, "active")
 
-def include_teardown_page():
-    teardown_path = fetch_teardown_path()
-    if teardown_path:
-        buffer.append(f"!include -teardown {teardown_path}")
+def deactivate_user(user_id):
+    user = fetch_user(user_id)
+    update_status(user, "inactive")
 ```
 
 ### 2.10. Error Handling is One Thing
-- Functions that handle errors should do only that. Extract error-handling logic into separate functions.
+- Functions that handle errors should focus solely on error handling.
+- Extract error-handling logic into separate functions.
 ```python
 # Good
-def delete_page_with_error_handling(page):
+def process_order_with_error_handling(order):
     try:
-        delete_page(page)
-    except Exception as e:
-        log_error(e)
+        process_order(order)
+    except ValueError as e:
+        handle_validation_error(e)
+    except ConnectionError as e:
+        handle_connection_error(e)
 
 # Bad
-def delete_page(page):
+def process_order(order):
     try:
-        # Delete logic
-    except Exception as e:
-        log_error(e)
+        # Core processing logic
+        if not validate_order(order):
+            raise ValueError("Invalid order")
+        connect_to_service()
+        send_order(order)
+    except ValueError as e:
+        log_error(f"Validation error: {e}")
+    except ConnectionError as e:
+        log_error(f"Connection error: {e}")
 ```
 
 ## 3. Comments
 - Comments are a necessary evil, not a hallmark of good code. They often:
   - Become outdated and misleading.
   - Signal failures to express intent through code.
-  - Always strive to rewrite code for clarity instead of relying on comments.
-
+- Always strive to rewrite code for clarity instead of relying on comments.
 ### 3.1. When Comments are Necessary
-#### 3.1.1. Informative Comments
+#### 3.1.1. Informative Comments and Explanation of Intent
 - Provide essential information that cannot be expressed directly in code.
 ```python
 # Matches "Tue, 02 Apr 2003 22:18:49 GMT"
@@ -303,8 +360,9 @@ http_date_pattern = re.compile(
 )
 ```
 
-#### 3.1.2. Explanation of Intent
-- Use comments to clarify why decisions were made.
+#### 3.1.2. Explanation of Intent and Amplification
+- Clarify the reasoning behind specific decisions.
+- Emphasize critical details that might not be immediately obvious.
 ```python
 # Use a thread-local date formatter to avoid concurrency issues
 from threading import local
@@ -314,32 +372,28 @@ def get_date_format():
     if not hasattr(thread_local_date_format, "formatter"):
         thread_local_date_format.formatter = "%Y-%m-%d"
     return thread_local_date_format.formatter
+
+# The trim is crucial to avoid issues with leading/trailing spaces
+list_item = text.strip()
 ```
 
 #### 3.1.3. Warnings About Consequences
-- Warn developers of potential pitfalls or consequences.
+- Warn developers about potential pitfalls or important considerations.
 ```python
 # SimpleDateFormat is not thread-safe; create a new instance for each thread
 date_format = "%Y-%m-%d"
 ```
 
 #### 3.1.4. TODO Comments
-- Mark areas for future work clearly.
+- Mark areas that require further work or optimization.
 ```python
 # TODO: Optimize this function for large datasets
 def calculate_primes(limit):
     pass
 ```
 
-#### 3.1.5. Amplification
-- Emphasize critical details that might otherwise seem minor.
-```python
-# The trim is crucial to avoid issues with leading/trailing spaces
-list_item = text.strip()
-```
-
-#### 3.1.6. Public API Documentation
-- Use docstrings for public-facing APIs.
+#### 3.1.5. Public API Documentation
+- Use docstrings for public-facing APIs to improve usability.
 ```python
 def get_user_by_id(user_id: str):
     """
@@ -355,51 +409,42 @@ def get_user_by_id(user_id: str):
 ```
 
 ### 3.2. What to Avoid
-#### 3.2.1. Redundant Comments
+#### 3.2.1. Redundant and Noisy Comments
 - Avoid comments that restate what the code already expresses.
+- Avoid comments that add no value to the code.
+   Avoid comments added solely for compliance or formalities.
 ```python
 # Adds two numbers
 result = a + b  # Redundant and unnecessary
+
+# Returns the day of the month
+def get_day_of_month():
+    return day_of_month
+
+# The name of the user
+user_name = "John"  # Pointless redundancy
 ```
 
 #### 3.2.2. Misleading Comments
-- Ensure comments accurately describe the code.
+- Ensure comments accurately describe the code they accompany.
 ```python
 # Returns True if the list is empty
 return len(my_list) > 0  # Misleading; this checks if the list is non-empty
 ```
 
-#### 3.2.3. Mandated Comments
-- Avoid comments added solely for compliance purposes.
-```python
-# The name of the user
-user_name = "John"  # Pointless redundancy
-```
-
-#### 3.2.4. Journal Comments
-- Use version control instead of journal entries.
+#### 3.2.3. Journal Comments and Commented-Out Code
+- Use version control systems instead of maintaining manual comment logs.
+- Remove commented-out code entirely; version control retains the history.
 ```python
 # Added by Eric on 2024-01-15
-```
 
-#### 3.2.5. Commented-Out Code
-- Remove commented-out code; rely on version control.
-```python
 # Old implementation
 # result = calculate_old_way(x, y)
 # return result
 ```
 
-#### 3.2.6. Noisy Comments
-- Avoid comments that add no value.
-```python
-# Returns the day of the month
-def get_day_of_month():
-    return day_of_month 
-```
-
-### 3.3. Rewrite Instead of Commenting
-- Use **descriptive function names** and **variables** to make comments unnecessary.
+### 3.3. Refactor Instead of Commenting
+- Use **descriptive function names** and **variables** instead of relying on comments.
 ```python
 # Good
 if user.is_eligible_for_benefits():
