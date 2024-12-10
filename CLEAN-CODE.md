@@ -1015,3 +1015,792 @@ def test_low_temp_alarm():
 - **Self-Validating**: Tests should pass or fail without manual inspection.
 - **Timely**: Write tests just before the production code they validate.
 
+## 9. Classes
+- Clean classes adhere to **SRP** and **OCP**, are cohesive, and minimize coupling.
+- Proper abstraction and organization enhance scalability, maintainability, and testability.
+### 9.1. Class Organization
+- Organize constants, instance variables, and methods logically.
+```python
+# Good: Constants, followed by instance variables, followed by methods
+class User:
+    DEFAULT_ROLE = "guest"  # Constant
+
+    def __init__(self, username):
+        self.username = username  # Instance variable
+        self.role = self.DEFAULT_ROLE
+
+    def promote(self):
+        self.role = "admin"
+
+    def demote(self):
+        self.role = self.DEFAULT_ROLE
+```
+
+### 9.2. Keep Classes Small
+- **Single Responsibility Principle (SRP)**: A class should do one thing well.
+```python
+# Good: Single Responsibility
+class Version:
+    def __init__(self, major, minor):
+        self.major = major
+        self.minor = minor
+
+    def get_version(self):
+        return f"{self.major}.{self.minor}"
+
+
+# Bad: Multiple Responsibilities
+class SuperDashboard:
+    def __init__(self):
+        self.major_version = 1
+        self.minor_version = 0
+        self.last_focused_component = None
+
+    def get_version(self):
+        return f"{self.major_version}.{self.minor_version}"
+
+    def set_last_focused(self, component):
+        self.last_focused_component = component
+```
+
+### 9.3. High Cohesion
+- A class should tightly relate its methods to its variables.
+```python
+# Good: Cohesive Class
+class Stack:
+    def __init__(self):
+        self.elements = []
+
+    def push(self, element):
+        self.elements.append(element)
+
+    def pop(self):
+        if not self.elements:
+            raise ValueError("Stack is empty")
+        return self.elements.pop()
+
+    def size(self):
+        return len(self.elements)
+
+
+# Bad: Low Cohesion
+class MixedBag:
+    def __init__(self):
+        self.numbers = []
+        self.text = ""
+
+    def add_number(self, number):
+        self.numbers.append(number)
+
+    def print_text(self):
+        print(self.text)
+```
+
+### 9.4. Organize for Change
+- Design for minimal changes when adding new functionality.
+- **Open-Closed Principle (OCP)**: Extend functionality without modifying existing code.
+```python
+# Good: Open-Closed with Subclasses
+class Sql:
+    def generate(self):
+        raise NotImplementedError()
+
+
+class SelectSql(Sql):
+    def __init__(self, table, columns):
+        self.table = table
+        self.columns = columns
+
+    def generate(self):
+        return f"SELECT {', '.join(self.columns)} FROM {self.table}"
+
+
+class InsertSql(Sql):
+    def __init__(self, table, columns, values):
+        self.table = table
+        self.columns = columns
+        self.values = values
+
+    def generate(self):
+        return f"INSERT INTO {self.table} ({', '.join(self.columns)}) VALUES ({', '.join(self.values)})"
+```
+
+### 9.5. Minimize Coupling
+- Depend on **abstractions** rather than **concrete implementations**.
+- Use dependency injection to decouple classes.
+```python
+# Good: Interface Dependency
+class StockExchange:
+    def get_current_price(self, symbol):
+        raise NotImplementedError()
+
+
+class FixedStockExchange(StockExchange):
+    def __init__(self):
+        self.prices = {}
+
+    def set_price(self, symbol, price):
+        self.prices[symbol] = price
+
+    def get_current_price(self, symbol):
+        return self.prices.get(symbol, 0)
+
+
+class Portfolio:
+    def __init__(self, stock_exchange):
+        self.stock_exchange = stock_exchange
+        self.holdings = {}
+
+    def add_stock(self, symbol, quantity):
+        self.holdings[symbol] = self.holdings.get(symbol, 0) + quantity
+
+    def value(self):
+        return sum(
+            self.stock_exchange.get_current_price(symbol) * quantity
+            for symbol, quantity in self.holdings.items()
+        )
+
+
+# Bad: Concrete Dependency
+class Portfolio:
+    def __init__(self):
+        self.stock_exchange = FixedStockExchange()
+        self.holdings = {}
+
+    # Other methods tightly coupled to FixedStockExchange
+```
+
+
+### 9.6. Testability and Flexibility
+- Use mock objects or stub implementations to isolate functionality.
+```python
+# Test with Stub
+class FixedStockExchangeStub(StockExchange):
+    def __init__(self):
+        self.prices = {}
+
+    def set_price(self, symbol, price):
+        self.prices[symbol] = price
+
+    def get_current_price(self, symbol):
+        return self.prices[symbol]
+
+
+def test_portfolio():
+    exchange_stub = FixedStockExchangeStub()
+    exchange_stub.set_price("AAPL", 150)
+
+    portfolio = Portfolio(exchange_stub)
+    portfolio.add_stock("AAPL", 10)
+
+    assert portfolio.value() == 1500
+```
+
+## 10. Systems
+- This section will cover:
+  - **Separation of Concerns** using dependency injection and factories.
+  - **Cross-Cutting Concerns** handled with decorators.
+  - **Scalable and Testable Architectures** using plain objects and modular design.
+  - **DSLs** for high-level configuration.
+### 10.1. Separate Constructing a System from Using It
+- **Example: Dependency Injection** separates object construction and usage.
+```python
+# Dependency Injection example in Python
+class Service:
+    def operation(self):
+        return "Service operation result"
+
+class Consumer:
+    def __init__(self, service: Service):
+        self.service = service
+
+    def perform_task(self):
+        return self.service.operation()
+
+# Main function handles construction
+if __name__ == "__main__":
+    service = Service()
+    consumer = Consumer(service)
+    print(consumer.perform_task())  # Outputs: "Service operation result"
+```
+
+### 10.2. Factories
+- Abstract Factory pattern allows decoupling object creation from usage.
+```python
+from abc import ABC, abstractmethod
+
+# Abstract Factory
+class LineItemFactory(ABC):
+    @abstractmethod
+    def create_line_item(self, name, price):
+        pass
+
+# Concrete Factory
+class ConcreteLineItemFactory(LineItemFactory):
+    def create_line_item(self, name, price):
+        return LineItem(name, price)
+
+# Product
+class LineItem:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+
+    def __str__(self):
+        return f"LineItem(name={self.name}, price={self.price})"
+
+# Usage
+factory = ConcreteLineItemFactory()
+item = factory.create_line_item("Widget", 19.99)
+print(item)  # Outputs: LineItem(name=Widget, price=19.99)
+```
+
+### 10.3. Scaling Up: Using Plain Old Python Objects (POPOs)
+- Design domain logic as simple, reusable, and testable POPOs.
+```python
+# Domain logic as a POPO
+class BankAccount:
+    def __init__(self, account_number, balance=0.0):
+        self.account_number = account_number
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance += amount
+
+    def withdraw(self, amount):
+        if amount > self.balance:
+            raise ValueError("Insufficient funds")
+        self.balance -= amount
+
+    def __str__(self):
+        return f"BankAccount(account_number={self.account_number}, balance={self.balance})"
+```
+
+### 10.4. Using Decorators for Cross-Cutting Concerns
+- Apply a logging decorator to add behavior without modifying the original function.
+```python
+def log_decorator(func):
+    def wrapper(*args, **kwargs):
+        print(f"Calling {func.__name__} with args {args} and kwargs {kwargs}")
+        result = func(*args, **kwargs)
+        print(f"{func.__name__} returned {result}")
+        return result
+    return wrapper
+
+@log_decorator
+def transfer_funds(account_from, account_to, amount):
+    account_from.withdraw(amount)
+    account_to.deposit(amount)
+    return f"Transferred {amount} from {account_from.account_number} to {account_to.account_number}"
+
+# Example usage
+account1 = BankAccount("12345", 500)
+account2 = BankAccount("67890", 300)
+print(transfer_funds(account1, account2, 100))
+```
+
+### 10.5. Domain-Specific Languages (DSLs)
+- Use Python functions and classes to create a DSL-like API for configuration.
+```python
+# Simple DSL for configuring a banking system
+class Bank:
+    def __init__(self, name):
+        self.name = name
+        self.accounts = []
+
+    def add_account(self, account):
+        self.accounts.append(account)
+
+    def __str__(self):
+        return f"Bank(name={self.name}, accounts={[str(a) for a in self.accounts]})"
+
+# DSL-like API
+def configure_bank():
+    bank = Bank("MyBank")
+    account1 = BankAccount("12345", 1000)
+    account2 = BankAccount("67890", 500)
+    bank.add_account(account1)
+    bank.add_account(account2)
+    return bank
+
+# Configuration
+bank = configure_bank()
+print(bank)
+```
+
+### 10.6. Test-Driven System Architecture
+- Writing tests for a modular system with injected dependencies.
+```python
+import unittest
+
+class TestBankAccount(unittest.TestCase):
+    def test_deposit(self):
+        account = BankAccount("12345", 100)
+        account.deposit(50)
+        self.assertEqual(account.balance, 150)
+
+    def test_withdraw_insufficient_funds(self):
+        account = BankAccount("12345", 100)
+        with self.assertRaises(ValueError):
+            account.withdraw(200)
+
+    def test_withdraw_sufficient_funds(self):
+        account = BankAccount("12345", 100)
+        account.withdraw(50)
+        self.assertEqual(account.balance, 50)
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+## 11. Emergence
+- This section on **Emergent Design Principles** will cover the following:
+  - **Runs All the Tests** ensures correctness and supports clean design.
+  - **No Duplication** reduces redundancy and improves maintainability.
+  - **Expressiveness** makes code readable and easier to maintain.
+  - **Minimize Classes and Methods** encourages simplicity without overcomplicating.
+
+### 11.1. Runs All the Tests
+- Testing ensures the system behaves as intended and supports clean code principles.
+```python
+# Example: Writing tests with `unittest`
+import unittest
+
+class MathOperations:
+    def add(self, a, b):
+        return a + b
+
+    def subtract(self, a, b):
+        return a - b
+
+class TestMathOperations(unittest.TestCase):
+    def setUp(self):
+        self.math_ops = MathOperations()
+
+    def test_add(self):
+        self.assertEqual(self.math_ops.add(2, 3), 5)
+
+    def test_subtract(self):
+        self.assertEqual(self.math_ops.subtract(5, 3), 2)
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+### 11.2. No Duplication
+- Eliminating duplication improves maintainability. Here’s an example of refactoring to remove duplication.
+```python
+# Before refactoring
+class ImageProcessor:
+    def scale_to_dimension(self, desired, current):
+        if abs(desired - current) < 0.01:
+            return
+        scale = desired / current
+        self.image = self._apply_scale(scale)
+
+    def rotate_image(self, angle):
+        self.image = self._apply_rotation(angle)
+
+    def _apply_scale(self, scale):
+        # Scaling logic
+        return f"Scaled by {scale}"
+
+    def _apply_rotation(self, angle):
+        # Rotation logic
+        return f"Rotated by {angle}"
+
+# After refactoring
+class ImageProcessorRefactored:
+    def process_image(self, transformation, **kwargs):
+        self.image = transformation(**kwargs)
+
+    def scale_to_dimension(self, desired, current):
+        if abs(desired - current) < 0.01:
+            return
+        scale = desired / current
+        self.process_image(self._apply_scale, scale=scale)
+
+    def rotate_image(self, angle):
+        self.process_image(self._apply_rotation, angle=angle)
+
+    def _apply_scale(self, scale):
+        return f"Scaled by {scale}"
+
+    def _apply_rotation(self, angle):
+        return f"Rotated by {angle}"
+```
+
+### 11.3. Expressiveness
+- Expressive code is readable, maintainable, and intuitive. Use meaningful names and small, clear methods.
+```python
+# Expressive naming and small methods
+class BankAccount:
+    def __init__(self, account_number, balance=0.0):
+        self.account_number = account_number
+        self.balance = balance
+
+    def deposit(self, amount):
+        """Add amount to balance."""
+        self.balance += amount
+
+    def withdraw(self, amount):
+        """Subtract amount from balance if sufficient funds exist."""
+        if amount > self.balance:
+            raise ValueError("Insufficient funds")
+        self.balance -= amount
+
+    def __str__(self):
+        """String representation of the account."""
+        return f"BankAccount(account_number={self.account_number}, balance={self.balance})"
+```
+
+### 11.4. Template Method
+- Avoid duplication by using the Template Method pattern.
+```python
+from abc import ABC, abstractmethod
+
+# Abstract class
+class VacationPolicy(ABC):
+    def accrue_vacation(self):
+        self.calculate_base_hours()
+        self.adjust_for_legal_minimums()
+        self.apply_to_payroll()
+
+    def calculate_base_hours(self):
+        print("Calculating base vacation hours...")
+
+    @abstractmethod
+    def adjust_for_legal_minimums(self):
+        pass
+
+    def apply_to_payroll(self):
+        print("Applying vacation to payroll...")
+
+# Concrete implementations
+class USVacationPolicy(VacationPolicy):
+    def adjust_for_legal_minimums(self):
+        print("Adjusting for US legal minimums...")
+
+class EUVacationPolicy(VacationPolicy):
+    def adjust_for_legal_minimums(self):
+        print("Adjusting for EU legal minimums...")
+
+# Usage
+us_policy = USVacationPolicy()
+us_policy.accrue_vacation()
+
+eu_policy = EUVacationPolicy()
+eu_policy.accrue_vacation()
+```
+
+### 11.5. Minimal Classes and Methods
+- Strive for balance: avoid excessive small methods and classes without compromising clarity or simplicity.
+```python
+# Example of pragmatic method design
+class Calculator:
+    def __init__(self):
+        self.result = 0
+
+    def calculate(self, operation, *args):
+        """Perform the given operation."""
+        operations = {
+            "add": lambda x, y: x + y,
+            "subtract": lambda x, y: x - y,
+        }
+        if operation not in operations:
+            raise ValueError(f"Unsupported operation: {operation}")
+        self.result = operations[operation](*args)
+        return self.result
+
+# Usage
+calc = Calculator()
+print(calc.calculate("add", 5, 3))       # 8
+print(calc.calculate("subtract", 10, 4))  # 6
+```
+
+## 12. Concurrency 
+- Concurrency increases complexity and risk.
+- By adhering to principles like SRP, limiting shared data, and using established patterns, we can write cleaner, more reliable concurrent code.
+- Use appropriate tools, libraries, and testing techniques to manage and mitigate concurrency issues effectively.
+### 12.1. Why Concurrency?
+- Concurrency decouples _what_ gets done from _when_ it gets done.
+- It helps improve throughput and system structure.
+- **Example: Concurrent Web Requests:**
+```python
+import concurrent.futures
+import requests
+
+def fetch_url(url):
+    response = requests.get(url)
+    return f"{url}: {len(response.content)} bytes"
+
+urls = [
+    "https://example.com",
+    "https://openai.com",
+    "https://python.org",
+]
+
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    results = executor.map(fetch_url, urls)
+
+for result in results:
+    print(result)
+```
+
+### 12.2. Common Myths
+- Concurrency can improve performance but also increases complexity.
+- Multithreaded systems must be carefully designed.
+- **Example: Mismanaged Shared Resource:**
+```python
+import threading
+
+class Counter:
+    def __init__(self):
+        self.value = 0
+
+    def increment(self):
+        self.value += 1
+
+counter = Counter()
+
+def task():
+    for _ in range(10000):
+        counter.increment()
+
+threads = [threading.Thread(target=task) for _ in range(2)]
+
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+
+print("Counter Value:", counter.value)  # Likely less than 20000 due to race condition
+```
+
+### 12.3. Single Responsibility Principle
+- Concurrency should be separated from other concerns to simplify debugging and testing.
+- **Example: Decoupling Concurrency**
+```python
+import threading
+
+class DataProcessor:
+    def process(self, data):
+        print(f"Processing {data}...")
+
+class WorkerThread(threading.Thread):
+    def __init__(self, processor, data):
+        super().__init__()
+        self.processor = processor
+        self.data = data
+
+    def run(self):
+        self.processor.process(self.data)
+
+processor = DataProcessor()
+threads = [WorkerThread(processor, f"Data-{i}") for i in range(5)]
+
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+```
+
+### 12.4. Avoid Shared Data
+- Minimize shared data to reduce synchronization overhead.
+- **Example: Using Thread-Local Data**
+```python
+import threading
+
+thread_local_data = threading.local()
+
+def process_data():
+    thread_local_data.value = threading.current_thread().name
+    print(f"Thread {threading.current_thread().name} has value: {thread_local_data.value}")
+
+threads = [threading.Thread(target=process_data) for _ in range(5)]
+
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+```
+
+### 12.5. Thread Safety
+- Use thread-safe data structures and libraries to avoid common pitfalls.
+- **Example: Using** `queue.Queue`
+```python
+import queue
+import threading
+
+task_queue = queue.Queue()
+
+def worker():
+    while not task_queue.empty():
+        task = task_queue.get()
+        print(f"{threading.current_thread().name} processing {task}")
+        task_queue.task_done()
+
+for i in range(10):
+    task_queue.put(f"Task-{i}")
+
+threads = [threading.Thread(target=worker) for _ in range(3)]
+
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+
+task_queue.join()
+```
+
+### 12.6. Producer-Consumer
+- The producer-consumer pattern is common for balancing workloads.
+- **Example: Producer-Consumer with** `queue.Queue`
+```python
+import threading
+import queue
+import time
+
+task_queue = queue.Queue()
+
+def producer():
+    for i in range(5):
+        task_queue.put(f"Task-{i}")
+        print(f"Produced Task-{i}")
+        time.sleep(0.5)
+
+def consumer():
+    while True:
+        task = task_queue.get()
+        if task is None:
+            break
+        print(f"Consumed {task}")
+        task_queue.task_done()
+
+producer_thread = threading.Thread(target=producer)
+consumer_thread = threading.Thread(target=consumer)
+
+producer_thread.start()
+consumer_thread.start()
+
+producer_thread.join()
+task_queue.put(None)  # Sentinel to stop the consumer
+consumer_thread.join()
+```
+
+### 12.7. Testing Concurrent Code
+- Testing concurrent code requires rigorous validation and instrumentation.
+- **Example: Testing with Thread Jiggling**
+```python
+import threading
+import random
+import time
+
+class ThreadJigglePoint:
+    @staticmethod
+    def jiggle():
+        if random.choice([True, False]):
+            time.sleep(0.01)
+
+def task():
+    for _ in range(5):
+        print(f"Task running in {threading.current_thread().name}")
+        ThreadJigglePoint.jiggle()
+
+threads = [threading.Thread(target=task) for _ in range(3)]
+
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+```
+
+## 13. Refactoring
+- Refactoring and writing clean code often involve identifying code "smells" and applying heuristics to fix them.
+- Below is a summary of key smells and heuristics, aimed at improving code readability, maintainability, and efficiency.
+---
+## 13.1. Comments
+- **1: Inappropriate Information**
+  - Comments should not include metadata better suited for tools like version control (e.g., author names, modification dates). Use comments only for technical notes about the code.
+- **2: Obsolete Comment**
+  - Outdated comments can mislead developers. Remove or update them to maintain relevance.
+- **3: Redundant Comment**
+  - Avoid comments that state the obvious or merely restate the code (e.g., `i++; // increment i`).
+- **4: Poorly Written Comment**
+  - Take the time to write concise, grammatically correct comments with meaningful information.
+- **5: Commented-Out Code**
+  - Delete commented-out code. Use version control to recover it if needed.
+---
+## 13.2. Environment
+- **1: Build Requires More Than One Step**
+  - Ensure the build process is a single, simple command.
+- **2: Tests Require More Than One Step**
+  - Running all tests should also require just one command or click.
+---
+## 13.3. Functions
+- **1: Too Many Arguments**
+  - Functions should have a small number of arguments. Prefer 0–3 arguments.
+- **2: Output Arguments**
+  - Avoid using output arguments; they can confuse readers. Change the state of the object instead.
+- **3: Flag Arguments**
+  - Boolean flags often indicate a function is doing too much. Split the functionality into separate functions.
+- **4: Dead Function**
+  - Remove unused functions. Use version control to retrieve them if necessary.
+---
+## 13.4. General Principles
+- **1: Multiple Languages in One Source File**
+  - Minimize mixing languages (e.g., Java with XML, HTML, or JavaScript) in a single file.
+- **2: Obvious Behavior Is Unimplemented**
+  - Implement behaviors that users would reasonably expect (e.g., case-insensitive string comparisons).
+- **3: Incorrect Behavior at the Boundaries**
+  - Test and validate all edge cases to ensure correct behavior.
+- **4: Overridden Safeties**
+  - Avoid overriding safety mechanisms (e.g., turning off compiler warnings or ignoring failing tests).
+- **5: Duplication**
+  - Follow the DRY principle: avoid code duplication by using abstractions or design patterns.
+- **6: Code at Wrong Level of Abstraction**
+  - Separate high-level concepts from low-level details.
+- **7: Base Classes Depending on Their Derivatives**
+  - Base classes should not depend on their derived classes.
+- **8: Too Much Information**
+  - Keep interfaces small. Limit what is exposed to reduce coupling.
+- **9: Dead Code**
+  - Remove code that is no longer executed or relevant.
+- **10: Vertical Separation**
+  - Declare variables close to where they are used. Define private functions near their first usage.
+- **11: Inconsistency**
+  - Be consistent in naming and formatting conventions.
+- **12: Clutter**
+  - Remove unused variables, functions, and comments.
+- **13: Artificial Coupling**
+  - Avoid unnecessary dependencies between unrelated modules.
+- **14: Feature Envy**
+  - Methods should focus on their own class's data and functionality, not another class's.
+---
+## 13.5. Names
+- **1: Choose Descriptive Names**
+  - Use meaningful names that reflect the purpose of variables and functions.
+- **2: Avoid Encodings**
+  - Avoid adding type or scope information in variable names (e.g., `m_variableName`).
+- **3: Use Long Names for Long Scopes**
+  - Use concise names for short-lived variables but longer, descriptive names for those with broader scopes.
+- **4: Names Should Describe Side-Effects**
+  - Function names should clearly state all their effects.
+---
+## 13.6. Tests
+- **1: Insufficient Tests**
+  - Ensure all potential edge cases and failures are covered.
+- **2: Use a Coverage Tool**
+  - Use tools to measure and improve test coverage.
+- **3: Don’t Skip Trivial Tests**
+  - Even simple tests provide value as documentation and validation.
+- **4: Test Boundary Conditions**
+  - Pay special attention to edge cases, as they often cause errors.
+---
+  
+
+
+
+
+
+
