@@ -674,8 +674,8 @@ class User:
 >   - Prefer data structures when you need flexibility in adding new behaviors.
 
 ## 6. Error Handling
-- Clean code is both readable and robust. Error handling should be treated as a separate concern, allowing the main logic to remain clear and focused.
-- By organizing error handling independently, developers can reason about it more effectively, leading to greater maintainability and fewer bugs.
+- Separate error handling from the main logic for clarity and maintainability.
+- Treat error handling as an independent concern to ensure clean, robust, and testable code.
 ### 6.1. Use Exceptions Rather Than Return Codes
 - Exceptions make code cleaner by separating logic from error handling.
 - Avoid cluttering the caller with checks for return values.
@@ -746,7 +746,8 @@ raise Exception("Error occurred")
 ```
 
 ### 6.5. Define Exception Classes in Terms of Caller’s Needs
-- Create exceptions that align with how they will be handled in your codebase.
+- Use a single custom exception class for similar errors.
+- Simplify handling by grouping exceptions into logical categories.
 ```python
 # Good
 class PortDeviceFailure(Exception):
@@ -767,7 +768,8 @@ except ATM1212UnlockedException:
 ```
 
 ### 6.6. Define the Normal Flow
-- Avoid cluttering logic with exceptions by using patterns like the Special Case Pattern.
+- Use the **Special Case Pattern** to encapsulate special cases.
+- Avoid exceptions in regular logic flows.
 ```python
 # Good
 class MealExpenses:
@@ -788,6 +790,7 @@ except MealExpensesNotFound:
 
 ### 6.7. Don’t Return Null
 - Return special case objects or throw exceptions instead of returning None.
+- Eliminate the need for repetitive `None` checks.
 ```python
 # Good
 def get_employees():
@@ -805,7 +808,8 @@ if employees is not None:
 ```
 
 ### 6.8. Don’t Pass Null
-- Avoid accepting None as an argument by default; validate inputs early.
+- Avoid accepting `None` as an argument unless explicitly required.
+- Validate inputs to catch issues early.
 ```python
 # Good
 def calculate_metric(p1, p2):
@@ -817,3 +821,197 @@ def calculate_metric(p1, p2):
 def calculate_metric(p1, p2):
     return (p2.x - p1.x) * 1.5  # Will throw runtime error if p1 or p2 is None
 ```
+
+## 7. Boundaries
+- Encapsulating third-party code minimizes the impact of future changes.
+- Learning tests ensure reliable usage and maintain compatibility with updates.
+- Clean boundaries reduce dependencies and promote maintainable, robust code.
+### 7.1. Encapsulate Third-Party Code
+- Avoid passing third-party interfaces, like Map, around your system directly.
+- Encapsulate third-party code in classes or adapters to enforce constraints and control changes.
+```python
+# Good
+class Sensors:
+    def __init__(self):
+        self._sensors = {}
+
+    def add_sensor(self, id, sensor):
+        self._sensors[id] = sensor
+
+    def get_sensor(self, id):
+        return self._sensors.get(id)
+
+# Bad
+sensors = {}
+sensors["sensor1"] = Sensor()
+sensor = sensors["sensor1"]
+```
+
+### 7.2. Use Learning Tests
+- Write tests to understand and validate the behavior of third-party APIs before using them.
+- Learning tests help verify compatibility with future updates of the third-party library.
+```python
+# Example: Learning test for a logging library
+def test_logger():
+    logger = logging.getLogger("test")
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+    logger.addHandler(handler)
+    logger.info("This is a test log")
+```
+
+### 7.3. Define Interfaces for Unknown Boundaries
+- When dependent code or APIs are unavailable, define your own interfaces to decouple development.
+- Use adapters to bridge gaps when the actual API becomes available.
+```python
+# Good
+class Transmitter:
+    def transmit(self, frequency, data_stream):
+        raise NotImplementedError("This method should be overridden")
+
+# Adapter for future API
+class TransmitterAdapter(Transmitter):
+    def __init__(self, external_transmitter_api):
+        self._api = external_transmitter_api
+
+    def transmit(self, frequency, data_stream):
+        self._api.send(frequency, data_stream)
+```
+
+### 7.4. Control Change at Boundaries
+- Create minimal dependencies on third-party code to reduce maintenance overhead.
+- Use adapters or wrappers to isolate changes when third-party libraries are updated.
+```python
+# Good
+class MyLogger:
+    def __init__(self):
+        self.logger = logging.getLogger("MyApp")
+        self.logger.addHandler(logging.StreamHandler())
+
+    def log(self, message):
+        self.logger.info(message)
+
+# Bad
+logger = logging.getLogger("MyApp")
+logger.addHandler(logging.StreamHandler())
+logger.info("This is a log message")
+```
+
+### 7.5. Keep Boundaries Clean
+- Avoid spreading references to external APIs across your codebase.
+- Use abstraction to limit the exposure of external interfaces.
+```python
+# Good
+class PaymentProcessor:
+    def process_payment(self, amount):
+        raise NotImplementedError
+
+class StripeAdapter(PaymentProcessor):
+    def __init__(self, stripe_client):
+        self.stripe = stripe_client
+
+    def process_payment(self, amount):
+        return self.stripe.charge(amount)
+
+# Bad
+stripe = StripeClient()
+stripe.charge(100)
+```
+
+## 8. Unit Tests
+- Clean tests are essential for maintainable, flexible, and robust production code.
+- Follow principles like F.I.R.S.T. and focus on clarity and expressiveness.
+- Invest in writing high-quality tests as they safeguard your code and enable long-term project health.
+### 8.1. Write Tests First (TDD Principles)
+- Write a failing unit test before any production code.
+- Write just enough production code to pass the test, and repeat.
+```python
+# Good: Test-Driven Development
+def test_addition():
+    assert add(2, 3) == 5  # Failing test first
+
+def add(a, b):
+    return a + b  # Write production code after test
+```
+
+### 8.2. Keep Tests Clean
+- Treat test code with the same care as production code.
+- Clean and readable tests reduce maintenance costs and increase reliability.
+```python
+# Good: Clean and readable
+def test_temperature_alert():
+    hw.set_temp(WAY_TOO_COLD)
+    controller.tic()
+    assert hw.heater_on()
+    assert hw.lo_temp_alarm()
+
+# Bad: Dirty and repetitive
+def test_temperature_alert():
+    hw.set_temp(-50)
+    if not hw.heater:
+        raise AssertionError
+    if not hw.lo_temp_alarm:
+        raise AssertionError
+```
+
+### 8.2. Keep Tests Clean
+- Focus each test on one concept or behavior to improve clarity and debugging.
+```python
+# Good: Separate concepts
+def test_add_month_single_month():
+    assert add_months(date(2023, 1, 31), 1) == date(2023, 2, 28)
+
+def test_add_month_multiple_months():
+    assert add_months(date(2023, 1, 31), 2) == date(2023, 3, 31)
+
+# Bad: Multiple concepts in one test
+def test_add_month():
+    assert add_months(date(2023, 1, 31), 1) == date(2023, 2, 28)
+    assert add_months(date(2023, 1, 31), 2) == date(2023, 3, 31)
+```
+
+### 8.5. Build a Domain-Specific Testing Language
+- Create reusable utilities or methods that simplify and express the intent of your tests.
+```python
+# Good: Domain-Specific Language
+def make_page(name, content=""):
+    crawler.add_page(root, PathParser.parse(name), content)
+
+def test_page_content():
+    make_page("TestPage", "Hello World")
+    assert response_contains("Hello World")
+
+# Bad: Repeated details in every test
+def test_page_content():
+    crawler.add_page(root, PathParser.parse("TestPage"), "Hello World")
+    response = responder.make_response(context, request)
+    assert "Hello World" in response.get_content()
+```
+
+### 8.6. Minimize Asserts (If Practical)
+- While not always mandatory, minimizing the number of assertions can improve test clarity.
+```python
+# Good: Focused test
+def test_low_temp_alarm():
+    hw.set_temp(WAY_TOO_COLD)
+    controller.tic()
+    assert hw.get_state() == "HBchL"  # Encoded state: Heater, Blower, Low Alarm On
+
+# Bad: Multiple assertions, harder to interpret
+def test_low_temp_alarm():
+    hw.set_temp(WAY_TOO_COLD)
+    controller.tic()
+    assert hw.heater_on()
+    assert hw.blower_on()
+    assert not hw.cooler_on()
+    assert hw.lo_temp_alarm()
+```
+
+### 8.7. F.I.R.S.T. Principles
+- **Fast**: Tests should run quickly to encourage frequent execution.
+- **Independent**: Tests should not depend on the state set by other tests.
+- **Repeatable**: Tests should produce consistent results in any environment.
+- **Self-Validating**: Tests should pass or fail without manual inspection.
+- **Timely**: Write tests just before the production code they validate.
+
