@@ -677,7 +677,143 @@ class User:
 - Clean code is both readable and robust. Error handling should be treated as a separate concern, allowing the main logic to remain clear and focused.
 - By organizing error handling independently, developers can reason about it more effectively, leading to greater maintainability and fewer bugs.
 ### 6.1. Use Exceptions Rather Than Return Codes
+- Exceptions make code cleaner by separating logic from error handling.
+- Avoid cluttering the caller with checks for return values.
+```python
+# Good
+try:
+    device.shutdown()
+except DeviceShutdownError as e:
+    logger.log(e)
 
+# Bad
+if device.handle != INVALID_HANDLE:
+    if device.status != DEVICE_SUSPENDED:
+        device.pause()
+        device.clear_queue()
+        device.close()
+    else:
+        logger.log("Device is suspended")
+else:
+    logger.log("Invalid handle")
+```
 
+### 6.2. Write Your Try-Catch-Finally Statement First
+- Define the scope of error handling upfront.
+- Helps maintain consistent program state even when errors occur.
+```python
+# Good
+try:
+    with open("data.txt", "r") as file:
+        process(file.read())
+except FileNotFoundError as e:
+    logger.log(f"File not found: {e}")
 
+# Bad
+with open("data.txt", "r") as file:
+    try:
+        process(file.read())
+    except:
+        pass
+```
 
+### 6.3. Use Unchecked Exceptions
+- Reduce dependencies and method signature changes by using unchecked exceptions.
+- Avoid forcing upstream changes for low-level exceptions.
+```python
+# Good
+def process_data(data):
+    if not validate(data):
+        raise DataValidationError("Invalid data")
+    # Process data...
+
+# Bad
+def process_data(data):
+    if not validate(data):
+        return False  # Caller must check return value
+    # Process data...
+```
+
+### 6.4. Provide Context with Exceptions
+- Include meaningful error messages to help with debugging.
+- Add relevant context like operation type or failing input.
+```python
+# Good
+raise FileProcessingError(f"Failed to process file {filename}")
+
+# Bad
+raise Exception("Error occurred")
+```
+
+### 6.5. Define Exception Classes in Terms of Caller’s Needs
+- Create exceptions that align with how they will be handled in your codebase.
+```python
+# Good
+class PortDeviceFailure(Exception):
+    pass
+
+try:
+    port.open()
+except PortDeviceFailure as e:
+    logger.log(e)
+
+# Bad
+try:
+    port.open()
+except DeviceResponseException:
+    logger.log("Device response error")
+except ATM1212UnlockedException:
+    logger.log("ATM unlock error")
+```
+
+### 6.6. Define the Normal Flow
+- Avoid cluttering logic with exceptions by using patterns like the Special Case Pattern.
+```python
+# Good
+class MealExpenses:
+    def get_total(self):
+        return 0
+
+# Always return an object, even for missing data
+expenses = expense_report.get_meals(employee.id) or MealExpenses()
+total += expenses.get_total()
+
+# Bad
+try:
+    expenses = expense_report.get_meals(employee.id)
+    total += expenses.get_total()
+except MealExpensesNotFound:
+    total += per_diem
+```
+
+### 6.7. Don’t Return Null
+- Return special case objects or throw exceptions instead of returning None.
+```python
+# Good
+def get_employees():
+    return []
+
+employees = get_employees()
+for e in employees:
+    total_pay += e.get_pay()
+
+# Bad
+employees = get_employees()
+if employees is not None:
+    for e in employees:
+        total_pay += e.get_pay()
+```
+
+### 6.8. Don’t Pass Null
+- Avoid accepting None as an argument by default; validate inputs early.
+```python
+# Good
+def calculate_metric(p1, p2):
+    if p1 is None or p2 is None:
+        raise ValueError("Points must not be null")
+    return (p2.x - p1.x) * 1.5
+
+# Bad
+def calculate_metric(p1, p2):
+    return (p2.x - p1.x) * 1.5  # Will throw runtime error if p1 or p2 is None
+```
