@@ -26,34 +26,6 @@ This summarization aims to serve as a quick reference for developers who wish to
 - This resource is intended as a supplement to the original text, providing practical examples and summarizing key takeaways.
 - To get the full context and depth of the concepts discussed, it is highly recommended to read the book.
 
-## Topics Covered
-### Naming
-Learn how to choose descriptive, meaningful names for variables, functions, and classes to improve code readability and maintainability.
-
-### Functions
-Understand how to write small, focused functions that do one thing well and operate at a single level of abstraction.
-
-### Comments
-Explore when comments are necessary, how to write meaningful comments, and why minimizing them through expressive code is preferred.
-
-### Error Handling
-Discover effective strategies for handling errors, using exceptions instead of error codes, and separating error-handling logic from business logic.
-
-### Code Smells and Refactoring
-Identify common code smells and refactoring techniques to keep your codebase clean, modular, and maintainable.
-
-## Example Format
-Each section includes:
-- **Guiding principles**: High-level takeaways and philosophies.
-- **Good and bad examples**: Code snippets demonstrating clean and unclean implementations.
-- **Best practices**: Practical advice for writing cleaner, more maintainable code.
-
-## Contribution
-Feel free to contribute by:
-- Adding more examples or principles.
-- Refining existing content for clarity or accuracy.
-- Sharing additional insights on clean code practices.
-
 ## Disclaimer
 This repository is not a replacement for the original book, **Clean Code: A Handbook of Agile Software Craftsmanship**. It is a summarized reference that highlights the core ideas presented in the book. All credit for the original content goes to the author, Robert C. Martin.
 
