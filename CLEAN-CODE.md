@@ -1,5 +1,24 @@
 ## Introduction 
-...
+This document serves as a concise summary of the key concepts, principles, and practices outlined in Clean Code: A Handbook of Agile Software Craftsmanship by Robert C. Martin. It is intended as an educational reference for software developers seeking to improve their coding skills and adopt cleaner, more maintainable programming practices.
+
+The contents include curated insights into effective naming, structuring functions, handling errors, and writing expressive code that minimizes duplication and reliance on comments. While this document distills themes and ideas from the original text, it is not a replacement for the book itself. Readers are encouraged to explore the full work for a deeper understanding of clean coding practices.
+
+## Table of Contents
+1. [Naming](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#1-naming)
+2. [Functions](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#2-functions)
+3. [Comments](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#3-comments)
+4. [Formatting](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#4-formatting)
+5. [Objects and Data Structures in Python](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#5-objects-and-data-structures-in-python)
+6. [Error Handling](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#6-error-handling)
+7. [Boundaries](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#7-boundaries)
+8. [Unit Tests](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#8-unit-tests)
+9. [Classes](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#9-classes)
+10. [Systems](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#10-systems)
+11. [Emergence](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#11-emergence)
+12. [Concurrency](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#12-concurrency)
+13. [Refactoring](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#13-refactoring)
+        
+---
 
 ## 1. Naming 
 - Good naming improves readability and maintainability by clearly conveying intent, purpose, and context.
