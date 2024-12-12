@@ -1,6 +1,6 @@
 # Clean Code Concepts and Practices
 
-This repository provides a concise summarization of key concepts and themes from **Clean Code: A Handbook of Agile Software Craftsmanship** by Robert C. Martin. The content here distills the principles and practices outlined in the book into actionable python examples and guidelines, making it easier to apply these techniques in day-to-day software development.
+This repository provides a high level summary of key concepts and themes from **Clean Code: A Handbook of Agile Software Craftsmanship** by Robert C. Martin. The content here distills the principles and practices outlined in the book into actionable python examples and guidelines, making it easier to apply these techniques in day-to-day software development.
 
 ## Table of Contents
 1. [Naming](https://github.com/nicolenewhouse3/clean-code/blob/main/CLEAN-CODE.md#1-naming)
