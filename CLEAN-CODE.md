@@ -24,34 +24,34 @@ The contents include curated insights into effective naming, structuring functio
 - Good naming improves readability and maintainability by clearly conveying intent, purpose, and context.
 - Regularly refactor names to enhance clarity and eliminate ambiguity.
 
-### 1.1.  Use Intention-Revealing Names
+### 1.1.  Use Descriptive Names
 - Names should describe the purpose, usage, and meaning without needing additional comments.
 ```python
 # Good
-elapsed_time_in_days = 7
-days_since_creation = 10
+number_of_active_users = 150
+max_connection_limit = 100
 
 # Bad
-d = 7  # elapsed time
+n = 150  # active users
+mcl = 100  # maximum connections
 ```
 
-### 1.2. Make Meaningful Distinctions
+### 1.2. Names Should Highlight Intent
 - Names should highlight the purpose and differences between entities.
 - Avoid generic or arbitrary changes, like adding numbers or noise words.
 ```python
-# Good  
-def copy_chars(source, destination):
-    for i in range(len(source)):
-        destination[i] = source[i]
+# Good
+def calculate_discount_price(original_price, discount_rate):
+    return original_price * (1 - discount_rate)
 
 # Bad
-def copy_chars(a1, a2):
-    for i in range(len(a1)):
-        a2[i] = a1[i]
+def calculate_price(p1, p2):
+    return p1 * (1 - p2)
 ```
 
 ### 1.3. Avoid Misleading or Ambiguous Names
 - Avoid names that mislead or suggest a meaning different from their intent.
+- Avoid including data types in variable names, as it may cause confusion when refactoring or changing the type.
 ```python
 # Good
 account_group = [account1, account2]
@@ -62,72 +62,55 @@ account_list = {key: value}  # Misleading, not a list
 
 ### 1.4. Use Pronounceable and Searchable Names
 - Choose names that are easy to pronounce and search for in code.
-- Avoid single-letter variables or constants that lack clarity.
+- Avoid single-letter variables, magic numbers or constants that lack clarity.
 ```python
 # Good
-pswdExpDt = "2024-12-31"
+user_creation_date = "2024-12-31"
 
 # Bad
-password_expiration_date = "2024-12-31"
+ucrtDt = "2024-12-31"
 
 # Good
-WORK_DAYS_PER_WEEK = 5
-HOURS_PER_DAY = 4
-TASK_COUNT = 7
+max_login_attempts = 5
+seconds_per_minute = 60
+total_time_in_seconds = 120
 
-for task_index in range(TASK_COUNT):
-    total += values[task_index] * HOURS_PER_DAY / WORK_DAYS_PER_WEEK
+for attempt in range(max_login_attempts):
+    time_left = total_time_in_seconds / seconds_per_minute
 
 # Bad
-for i in range(7):
-    total += values[i] * 4 / 5
+for a in range(5):
+    t = 120 / 60
 ```
 
-### 1.5. Avoid Encodings and Mental Mapping
-- Do not add unnecessary type or scope encodings (e.g., m_ or Hungarian Notation).
-- Use descriptive names instead of abstract placeholders.
-```python
-# Good
-class Part:
-    def __init__(self):
-        self.description = ""
-
-# Bad
-class Part:
-    def __init__(self):
-        self.m_description = ""
-
-# Good
-url_without_host = "example.com/path"
-
-# Bad
-r = "example.com/path"  # What does r mean?
-```
-
-### 1.6. Add Context Through Names
+### 1.5. Provide Context Without Redundancy
 - Provide context through clear class, function, or variable names.
 - Avoid unnecessary prefixes or redundant context.
 ```python
 # Good
-class Address:
-    def __init__(self, street, city, state, zip_code):
-        pass
+class User:
+    def __init__(self, first_name, last_name, email):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
 
 # Bad
-class GSDAddress:
-    def __init__(self, gsd_street, gsd_city, gsd_state, gsd_zip_code):
-        pass
+class UserInfo:
+    def __init__(self, user_first_name, user_last_name, user_email):
+        self.user_first_name = user_first_name
+        self.user_last_name = user_last_name
+        self.user_email = user_email
 ```
 
-### 1.7. Avoid Cute or Clever Names
+### 1.6. Avoid Cute or Clever Names
 - Avoid humor or puns in names that may confuse others or lack clarity.
 ```python
 # Good
-def delete_items():
+def calculate_total_sales():
     pass
 
 # Bad
-def hand_grenade():
+def money_maker():
     pass
 ```
 
@@ -159,39 +142,9 @@ def calculate_total_price(cart):
     return total_price
 ```
 
-### 2.2. Do One Thing
-- Each function should do one thing and do it well.
-- Avoid combining unrelated operations.
-```python
-# Good
-def process_order(order):
-    validate_order(order)
-    calculate_shipping(order)
-    finalize_order(order)
-
-def validate_order(order):
-    if not order.is_valid():
-        raise ValueError("Order is invalid")
-
-def calculate_shipping(order):
-    order.shipping_cost = order.weight * 0.5
-
-def finalize_order(order):
-    order.status = "completed"
-    send_order_confirmation(order)
-
-# Bad
-def process_order(order):
-    if not order.is_valid():
-        raise ValueError("Order is invalid")
-    order.shipping_cost = order.weight * 0.5
-    order.status = "completed"
-    send_order_confirmation(order)
-```
-
-### 2.3. Use a Single Level of Abstraction
-- Functions should operate at a single level of abstraction.
-- Avoid mixing high-level logic with low-level details.
+### 2.2. Keep Functions to a Single Level of Abstraction
+- Functions should stick to a consistent level of detail, focusing on either high-level logic or low-level implementation, but not both.
+- Avoid mixing overarching tasks with granular details.
 ```python
 # Good
 def process_user_profile(user_data):
@@ -216,8 +169,9 @@ def process_user_profile(user_data):
         database.save("user_profiles", user_profile)
 ```
 
-### 2.4. Use Descriptive Names
+### 2.3. Use Descriptive Function Names
 - Function names should clearly describe their purpose.
+- Use **verbs** or verb phrases to indicate what the function does, as functions represent actions.
 - Long, descriptive names are better than short, cryptic ones.
 ```python
 # Good
@@ -231,41 +185,52 @@ def process_data(data):
     return total
 ```
 
-### 2.5. Minimize Function Arguments
+### 2.4. Minimize the Number of Arguments Used
 - Keep function arguments minimal. Prefer niladic (0), monadic (1), or dyadic (2) arguments.
 - Use argument objects for more than two arguments.
 ```python
 # Good
-def create_circle(center, radius):
-    pass
+class create_rectangle:
+    def __init__(self, top_left, dimensions):
+        self.top_left = top_left
+        self.dimensions = dimensions
 
 # Bad
-def create_circle(x, y, radius):
-    pass
+class create_rectangle:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 ```
 
-### 2.6. Avoid Flag Arguments
-- Flag arguments (e.g., `is_suite`) indicate a function is doing more than one thing. Split such functions into separate ones.
+### 2.5. Avoid Using Flags in Functions
+- Flags are variables (usually booleans) passed to functions, which the function uses to determine its behavior.
+- Functions with flags often violate the "single responsibility principle" by performing multiple tasks.
+- The easiest way to avoid flags is to split the function into smaller, focused functions, each handling one task.
 ```python
 # Good
-def process_admin_request(request_data):
-    log_admin_access(request_data)
-    return handle_admin_logic(request_data)
+def approve_admin_action(action_data):
+    validate_admin_access(action_data)
+    perform_admin_action(action_data)
 
-def process_user_request(request_data):
-    return handle_user_logic(request_data)
+def approve_user_action(action_data):
+    validate_user_access(action_data)
+    perform_user_action(action_data)
 
 # Bad
-def process_request(request_data, is_admin):
+def approve_action(action_data, is_admin):
     if is_admin:
-        log_admin_access(request_data)
-        return handle_admin_logic(request_data)
+        validate_admin_access(action_data)
+        perform_admin_action(action_data)
     else:
-        return handle_user_logic(request_data)
+        validate_user_access(action_data)
+        perform_user_action(action_data)
 ```
 
-### 2.7. Separate Command and Query Functions
+### 2.7. Separate Actions from Information Retrieval
 - Functions should either perform an action (command) or return information (query), but not both.
+- Combining actions and queries in the same function makes code harder to read and maintain.
 ```python
 # Good
 def is_username_valid(username):
@@ -288,35 +253,7 @@ if add_username_if_valid("john_doe"):
     pass
 ```
 
-### 2.8. Use Exceptions Instead of Error Codes
-- Avoid returning error codes.
-- Use exceptions to separate normal flow from error handling.
-```python
-# Good
-def fetch_data(url):
-    if not url:
-        raise ValueError("URL cannot be empty")
-    # Logic to fetch data from the URL
-    return "data"
-
-try:
-    data = fetch_data("")
-except ValueError as e:
-    print(f"Error: {e}")
-
-# Bad
-def fetch_data(url):
-    if not url:
-        return "ERROR: URL cannot be empty"
-    # Logic to fetch data from the URL
-    return "data"
-
-result = fetch_data("")
-if "ERROR" in result:
-    print(result)
-```
-
-### 2.9. Eliminate Duplication
+### 2.8. Reduce Duplication where Possible
 - Abstract common logic into reusable functions to avoid repeated code.
 ```python
 # Good
@@ -337,11 +274,18 @@ def deactivate_user(user_id):
     update_status(user, "inactive")
 ```
 
-### 2.10. Error Handling is One Thing
-- Functions that handle errors should focus solely on error handling.
-- Extract error-handling logic into separate functions.
+### 2.8. Use Exceptions for Clean Error Handling
+- Avoid returning error codes to indicate errors, as they mix normal flow with error conditions and are harder to manage.
+- Use exceptions to clearly separate error handling from core logic.
+- Extract error-handling logic into dedicated functions to improve readability, reusability, and maintainability.
 ```python
 # Good
+def process_order(order):
+    if not validate_order(order):
+        raise ValueError("Invalid order")
+    connect_to_service()
+    send_order(order)
+
 def process_order_with_error_handling(order):
     try:
         process_order(order)
@@ -350,36 +294,50 @@ def process_order_with_error_handling(order):
     except ConnectionError as e:
         handle_connection_error(e)
 
+# Error-handling functions
+def handle_validation_error(error):
+    print(f"Validation error: {error}")
+
+def handle_connection_error(error):
+    print(f"Connection error: {error}")
+
+# Usage
+try:
+    process_order_with_error_handling(order)
+except Exception as e:
+    print(f"Unhandled error: {e}")
+
 # Bad
 def process_order(order):
+    if not validate_order(order):
+        return "ERROR: Invalid order"
     try:
-        # Core processing logic
-        if not validate_order(order):
-            raise ValueError("Invalid order")
         connect_to_service()
         send_order(order)
-    except ValueError as e:
-        log_error(f"Validation error: {e}")
-    except ConnectionError as e:
-        log_error(f"Connection error: {e}")
+    except ConnectionError:
+        return "ERROR: Connection error"
+
+result = process_order(order)
+if "ERROR" in result:
+    print(result)
 ```
 
 ## 3. Comments
 - Comments are a necessary evil, not a hallmark of good code. They often:
   - Become outdated and misleading.
   - Signal failures to express intent through code.
-- Always strive to rewrite code for clarity instead of relying on comments.
-### 3.1. When Comments are Necessary
-#### 3.1.1. Informative Comments and Explanation of Intent
+- Always strive to refactor code for clarity instead of relying on comments.
+### 3.1. When to Comment
+#### 3.1.1. Informative or Clarifying Comments
 - Provide essential information that cannot be expressed directly in code.
 ```python
-# Matches "Tue, 02 Apr 2003 22:18:49 GMT"
-http_date_pattern = re.compile(
-    r"[SMTWF][a-z]{2},\s[0-9]{2}\s[JFMASOND][a-z]{2}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT"
+# Matches a U.S. phone number in the format: (123) 456-7890 or 123-456-7890
+phone_number_pattern = re.compile(
+    r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
 )
 ```
 
-#### 3.1.2. Explanation of Intent and Amplification
+#### 3.1.2. Explaining Context or Assumptions Made
 - Clarify the reasoning behind specific decisions.
 - Emphasize critical details that might not be immediately obvious.
 ```python
@@ -427,8 +385,8 @@ def get_user_by_id(user_id: str):
     pass
 ```
 
-### 3.2. What to Avoid
-#### 3.2.1. Redundant and Noisy Comments
+### 3.2. What NOT to Comment
+#### 3.2.1. Avoid Redundant and Noisy Comments
 - Avoid comments that restate what the code already expresses.
 - Avoid comments that add no value to the code.
    Avoid comments added solely for compliance or formalities.
@@ -444,8 +402,9 @@ def get_day_of_month():
 user_name = "John"  # Pointless redundancy
 ```
 
-#### 3.2.2. Misleading Comments
+#### 3.2.2. Avoid Misleading Comments
 - Ensure comments accurately describe the code they accompany.
+- This means maintaining comments after refactoring.
 ```python
 # Returns True if the list is empty
 return len(my_list) > 0  # Misleading; this checks if the list is non-empty
